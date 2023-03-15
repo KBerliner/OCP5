@@ -254,7 +254,6 @@ function regexCheck(input, error, regexp, msg = ' is not an acceptable input, le
         if (valid > 0) {
             totalValid++;
         }
-        console.log(totalValid);
     })
 }
 
