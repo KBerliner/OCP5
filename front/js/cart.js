@@ -55,11 +55,13 @@ function getProduct(uid) {
 
 function getQuantity() {
     let quantity = 0;
-    for (let i = 0; i < cart.length; i++) {
-        quantity = quantity + cart[i].amount;
+    if (cart != null) {
+        for (let i = 0; i < cart.length; i++) {
+            quantity = quantity + cart[i].amount;
+        }
+        totalQuantity = quantity;
+        totalQuantityElement.textContent = quantity;
     }
-    totalQuantity = quantity;
-    totalQuantityElement.textContent = quantity;
 }
 
 // Total price calculation function
@@ -73,32 +75,29 @@ function getTotalPrice(amount, itemPrice) {
 
 async function createProduct() {
     totalPrice = 0;
-    for (let i = 0; i < cart.length; i++) {
-        const cartProduct = cart[i];
-        const uid = cartProduct.id;
-        const amount = cartProduct.amount;
-        const color = cartProduct.color;
-        const apiProduct = await getProduct(uid);
-        const name = apiProduct.name;
-        const imageUrl = apiProduct.imageUrl;
-        const imageAlt = apiProduct.altTxt;
-        const itemPrice = apiProduct.price;
-        productFramework(name, uid, imageUrl, imageAlt, color, amount, itemPrice);
+    if (cart != null) {
+        for (let i = 0; i < cart.length; i++) {
+            const cartProduct = cart[i];
+            const uid = cartProduct.id;
+            const amount = cartProduct.amount;
+            const color = cartProduct.color;
+            const apiProduct = await getProduct(uid);
+            const name = apiProduct.name;
+            const imageUrl = apiProduct.imageUrl;
+            const imageAlt = apiProduct.altTxt;
+            const itemPrice = apiProduct.price;
+            productFramework(name, uid, imageUrl, imageAlt, color, amount, itemPrice);
 
-        totalPrice = totalPrice + getTotalPrice(amount, itemPrice);
+            totalPrice = totalPrice + getTotalPrice(amount, itemPrice);
+        }
+        
+        totalPriceElement.textContent = totalPrice;
     }
-    
-    totalPriceElement.textContent = totalPrice;
 }
+
 
 createProduct();
 getQuantity();
-
-
-
-
-
-
 
 // DOM Product Creation Framework
 
@@ -165,55 +164,43 @@ function productFramework(name, uid, imageUrl, imageAlt, color, quantity, price)
     itemDeleteDiv.appendChild(itemDelete);
 
 
-        // Function to allow changing the quantity of a product
+    // Function to allow changing the quantity of a product
 
-        
-
-        itemQuantity.onchange = () => {
-            let preChangeQuantity = quantity;
-            let postChangeQuantity = itemQuantity.value;
-            totalPrice = (totalPrice - (preChangeQuantity * price)) + (postChangeQuantity * price);
-            totalPriceElement.textContent = totalPrice;
-            for (let i = 0; i < cart.length; i++) {
-                if (cart[i].id == uid && cart[i].color == color) {
-                    cart[i].amount = parseInt(itemQuantity.value);
-                    quantity = cart[i].amount;
-                    localStorage.setItem('id', JSON.stringify(cart));
-                    getQuantity();
-
-                }
-
+    itemQuantity.onchange = () => {
+        let preChangeQuantity = quantity;
+        let postChangeQuantity = itemQuantity.value;
+        totalPrice = (totalPrice - (preChangeQuantity * price)) + (postChangeQuantity * price);
+        totalPriceElement.textContent = totalPrice;
+        for (let i = 0; i < cart.length; i++) {
+            if (cart[i].id == uid && cart[i].color == color) {
+                cart[i].amount = parseInt(itemQuantity.value);
+                quantity = cart[i].amount;
+                localStorage.setItem('id', JSON.stringify(cart));
+                getQuantity();
             }
-
         }
+    }
 
-        // Function to allow deleting the product from the cart
+    // Function to allow deleting the product from the cart
 
-        itemDelete.onclick = () => {
-            
-            totalPrice = totalPrice - (quantity * price)
+    itemDelete.onclick = () => {        
+        totalPrice = totalPrice - (quantity * price)
 
-            for (let i = 0; i < cart.length; i++) {
-                if (cart[i].id == uid && cart[i].color == color) {
-                    cart.splice(i, 1);
-                    localStorage.setItem('id', JSON.stringify(cart));
-                    itemList.removeChild(cartItem);
-                    getQuantity();
-                }
+        for (let i = 0; i < cart.length; i++) {
+            if (cart[i].id == uid && cart[i].color == color) {
+                cart.splice(i, 1);
+                localStorage.setItem('id', JSON.stringify(cart));
+                itemList.removeChild(cartItem);
+                getQuantity();
             }
-            totalPriceElement.textContent = totalPrice;
         }
-
-
-
+        totalPriceElement.textContent = totalPrice;
+    }
 
     // Return Value
 
     return cartItem;
 }
-
-
-
 
 // API order function
 
@@ -243,47 +230,40 @@ function newOrder() {
     
 }
 
+// Regex function
+
+
+let totalValid = 0;
+
+function regexCheck(input, error, regexp, msg = ' is not an acceptable input, letters only please') {
+    let valid = 0;
+    input.addEventListener('input', () => {
+        if (regexp.test(input.value)) {
+            input.style.border = '2px solid green';
+            error.textContent = '';
+            valid++;
+            console.log(valid);
+        } else {
+            input.style.border = '2px solid red';
+            error.textContent = input.value + msg;
+            valid = 0;
+            console.log(valid);
+        }
+    });
+    input.addEventListener('blur', () => {
+        if (valid > 0) {
+            totalValid++;
+        }
+        console.log(totalValid);
+    })
+}
+
 // Use Regex to check contact inputs
 
-firstNameInput.addEventListener('blur', () => {
-    if (lettersOnly.test(firstNameInput.value)) {
-        firstNameInput.style.border = '2px solid green';
-        firstNameErrorMsg.textContent = '';
-    } else {
-        firstNameInput.style.border = '2px solid red';
-        firstNameErrorMsg.textContent = firstNameInput.value + ' is not an acceptable input, letters only please';
-    }
-});
-
-lastNameInput.addEventListener('blur', () => {
-    if (lettersOnly.test(lastNameInput.value)) {
-        lastNameInput.style.border = '2px solid green';
-        lastNameErrorMsg.textContent = '';
-    } else {
-        lastNameInput.style.border = '2px solid red';
-        lastNameErrorMsg.textContent = lastNameInput.value + ' is not an acceptable input, letters only please';
-    }
-});
-
-cityInput.addEventListener('blur', () => {
-    if (lettersOnly.test(cityInput.value)) {
-        cityInput.style.border = '2px solid green';
-        cityErrorMsg.textContent = '';
-    } else {
-        cityInput.style.border = '2px solid red';
-        cityErrorMsg.textContent = cityInput.value + ' is not an acceptable input, letters only please';
-    }
-});
-
-emailInput.addEventListener('blur', () => {
-    if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput.value)) {
-        emailInput.style.border = '2px solid green';
-        emailErrorMsg.textContent = '';
-    } else {
-        emailInput.style.border = '2px solid red';
-        emailErrorMsg.textContent = emailInput.value + ' is not an acceptable input, valid email format only please';
-    }
-});
+regexCheck(firstNameInput, firstNameErrorMsg, lettersOnly);
+regexCheck(lastNameInput, lastNameErrorMsg, lettersOnly);
+regexCheck(cityInput, cityErrorMsg, lettersOnly);
+regexCheck(emailInput, emailErrorMsg, /^[^\s@]+@[^\s@]+\.[^\s@]+$/, ' is not an acceptable input, valid email format only please')
 
 // Fill in the contact object and bring user to confirmation page
 
@@ -295,16 +275,25 @@ async function orderNumber(page) {
 
 orderButton.addEventListener('click', ($event) => {
     $event.preventDefault();
-    contact.firstName = firstNameInput.value;
-    contact.lastName = lastNameInput.value;
-    contact.address = addressInput.value;
-    contact.city = cityInput.value;
-    contact.email = emailInput.value;
-    for (let i = 0; i < cart.length; i++) {
-            idList.push(cart[i].id);
+    if (cart != null) {
+        if (cart.length != 0 && totalValid == 4 && addressInput.value) {
+            contact.firstName = firstNameInput.value;
+            contact.lastName = lastNameInput.value;
+            contact.address = addressInput.value;
+            contact.city = cityInput.value;
+            contact.email = emailInput.value;
+            for (let i = 0; i < cart.length; i++) {
+                    idList.push(cart[i].id);
+            }
+            newOrder();
+            let page = window.location.href.slice(0, -9);
+            orderNumber(page);
+        } else if (cart.length == 0) {
+            alert('There are no products in the cart, or an order cannot be placed.');
+        } else {
+            alert('Please fill in the whole contact form correctly.');
+        }
+    } else {
+        alert('There are no products in the cart, or an order cannot be placed.');
     }
-    newOrder();
-    let page = window.location.href.slice(0, -9);
-    orderNumber(page);
-    // location.href = page + 'confirmation.html?' + orderId;
 });
