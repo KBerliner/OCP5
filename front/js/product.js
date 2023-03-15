@@ -20,8 +20,6 @@ function getProduct() {
     request.onreadystatechange = () => {
         if (request.readyState == 4) {
             if (request.status === 200 || request.status === 201) {
-                // product = JSON.parse(request.response);
-                // console.log(product);
                 resolve(JSON.parse(request.response));
             } else {
                 reject(JSON.parse(request.response));
@@ -44,9 +42,51 @@ async function addInfo() {
         const colorOption = document.createElement('option');
         colorOption.setAttribute('value', product.colors[i]);
         colorOption.textContent = product.colors[i];
-        console.log(i);
         colorSelector.appendChild(colorOption);
     }
 }
 
 addInfo();
+
+// Add to Cart Button Function
+
+addToCartButton.addEventListener('click', () => {
+    const color = colorSelector.value;
+    const amount = parseInt(quantity.value);
+    if (color != "") {
+        if(localStorage) {
+            if (localStorage.getItem('id') == 'null' || localStorage.getItem('id') == null) {
+                let cartItems = [{
+                    'id': uid,
+                    'amount': amount,
+                    'color': color,
+                }];
+                localStorage.setItem('id', JSON.stringify(cartItems));
+            } else {
+                let cartItems = JSON.parse(localStorage.getItem('id'));
+                let sameColor = 0;
+                let sameIds = 0;
+                for (let i = 0; i < cartItems.length; i++) {
+                        if (cartItems[i].color == color && cartItems[i].color == color) {
+                            sameColor++;
+                            sameIds++
+                            cartItems[i].amount = cartItems[i].amount + amount;
+                            localStorage.setItem('id', JSON.stringify(cartItems));
+                        }
+                }
+                if (sameIds == 0 && sameColor == 0) {
+                    cartItems.push({
+                        'id': uid,
+                        'amount': amount,
+                        'color': color,
+                    });
+                    localStorage.setItem('id', JSON.stringify(cartItems));
+                }
+            }
+        } else {
+            alert('Your browser does not support local storage.');
+        }
+    } else {
+        alert('Please select a color');
+    }
+});
